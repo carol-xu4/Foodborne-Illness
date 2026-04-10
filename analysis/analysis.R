@@ -4,10 +4,3 @@ pacman::p_load(tidyverse, ggplot2, ggthemes, dplyr, lubridate, stringr, readxl, 
 
 # Set working directory ----------------------------------------------------
 setwd("C:/Users/CarolXu/OneDrive - Cato Institute/Desktop/foodborne illness")
-
-# Read in data -------------------------------------------------------------
-# Loop for rewritten output files containing selected columns only
-records = paste0("record_", 1:20)
-years = 1996:2020
-
-columns = ("year", "ucod", records)
