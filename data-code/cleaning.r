@@ -27,4 +27,30 @@ data = open_dataset("data/output", format = "csv",
     null_values = c("", "NA"),
     strings_can_be_null = TRUE))
 
-# 
+# recoding / pathogen definitions
+foodborne_illness = c("A05", "A059", "A045", "A072", "A32", "A327", "A02", "A020", 
+    "A021", "A029", "A043", "A053", "A046")
+
+data = data %>% filter(ucod %in% foodborne_illness) %>%
+    select(ucod, year, monthdth, all_of(records)) %>%
+    collect() 
+    # resulted in only 1241 rows. ignore this
+
+data = data %>%
+  select(ucod, year, monthdth, all_of(records)) %>%
+  collect() %>%
+  filter(
+    ucod %in% foodborne_illness |
+    if_any(all_of(records), ~ .x %in% foodborne_illness))
+    # resulted in 2170 rows
+
+icd_counts = data %>%
+  group_by(ucod) %>%
+  summarise(n = n()) %>%
+  arrange(desc(n)) %>%
+  collect()
+print(icd_counts)
+
+# final dataset
+write.csv(data, "data/output/foodborne_data.csv", row.names = FALSE)
+
