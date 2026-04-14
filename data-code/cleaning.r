@@ -8,6 +8,12 @@ setwd("C:/Users/CarolXu/OneDrive - Cato Institute/Desktop/foodborne illness")
 # Read in data -------------------------------------------------------------
 # Loop for rewritten output files containing selected columns only
 records = paste0("record_", 1:20)
-years = 1996:2020
 
-columns = ("year", "ucod", records)
+columns = c("year", "monthdth", "ucod", records)
+
+for (y in 1996:2020) {
+    mort.path = paste0("data/input/mort", y, ".csv")
+    mort.data = read_csv(mort.path, 
+    col_select = any_of(columns), col_types = cols(.default = col_character()),
+    show_col_types = FALSE)
+    write_csv(mort.data, paste0("data/output/mort", y, ".csv"))}
