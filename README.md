@@ -17,3 +17,5 @@
 | STEC+ (E. coli)                  | A04.3       | Enterohaemorrhagic Escherichia coli infection                               |
 | Vibrio                           | A05.3       | Foodborne Vibrio parahaemolyticus intoxication                              |
 | Yersinia                         | A04.6       | Enteritis due to Yersinia enterocolitica                                    |
+
+<img src="results/deaths_by_pathogen.png" width="400">
