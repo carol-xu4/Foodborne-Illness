@@ -30,6 +30,7 @@ icd_year_counts = data %>%
     A021 = if_any(c(ucod, all_of(records)), ~ .x == "A021"),
     A029 = if_any(c(ucod, all_of(records)), ~ .x == "A029"),
     A043 = if_any(c(ucod, all_of(records)), ~ .x == "A043"),
+    A053 = if_any(c(ucod, all_of(records)), ~ .x == "A053"),
     A046 = if_any(c(ucod, all_of(records)), ~ .x == "A046")
   ) %>%
   group_by(year) %>%
@@ -44,6 +45,7 @@ icd_year_counts = data %>%
     A021 = sum(A021, na.rm = TRUE),
     A029 = sum(A029, na.rm = TRUE),
     A043 = sum(A043, na.rm = TRUE),
+    A053 = sum(A053, na.rm = TRUE),
     A046 = sum(A046, na.rm = TRUE))
 
 write_csv(icd_year_counts, "results/icd_year_counts.csv")
