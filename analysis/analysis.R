@@ -157,3 +157,75 @@ ggplot(gastro_total_counts, aes(x = as.numeric(year), y = total_gastro)) +
     plot.caption = element_text(size = 12),
     plot.background = element_rect(fill = "white"))
 ggsave("results/gastroenteritis_deaths.png", width = 20, height = 15)
+
+### FINAL CODES ### ------------------------------------------------------------------------------
+# recoding / foodborne definitions
+foodborne_codes = c("A000","A001","A009","A010","A011","A012","A013","A014",
+"A020","A021","A022","A028","A029",
+"A030","A031","A032","A033","A038","A039",
+"A040","A041","A042","A043","A044","A045","A046","A048","A049",
+"A050","A051","A052","A053","A054","A058","A059",
+"A060","A061","A062","A063","A064","A065","A066","A067","A068","A069",
+"A070","A071","A072","A073","A078","A079",
+"A080","A081","A082","A083","A084","A085",
+"A09","K529",
+"A230","A231","A232","A233","A238","A239",
+"A32")
+
+foodborne_data = data %>%
+  select(ucod, year, monthdth, all_of(records)) %>%
+  collect() %>%
+  filter(
+    ucod %in% foodborne_codes |
+    if_any(all_of(records), ~ .x %in% foodborne_codes))
+    # resulted in 1791 rows
+
+foodborne_data = data %>%
+  select(ucod, year, monthdth, all_of(records)) %>%
+  collect() %>%
+  filter(
+    if_any(c(ucod, all_of(records)), ~ .x %in% foodborne_codes))
+
+foodborne_counts = data %>%
+  group_by(year) %>%
+  summarise(
+    !!!setNames(
+      map(foodborne_codes, ~
+        expr(sum(if_any(c(ucod, all_of(records)), ~ .x == !!.x), na.rm = TRUE))
+      ),
+      foodborne_codes),
+    .groups = "drop")
+write_csv(foodborne_counts, "results/foodborne_counts.csv")
+
+foodborne_total_counts = data %>%
+  mutate(foodborne_any = if_any(c(ucod, all_of(records)), ~ .x %in% foodborne_codes)) %>%
+  group_by(year) %>%
+  summarise(total_foodborne = sum(foodborne_any, na.rm = TRUE),
+    !!!setNames(
+      map(foodborne_codes, ~
+        expr(sum(if_any(c(ucod, all_of(records)), ~ .x == !!.x), na.rm = TRUE))),
+      foodborne_codes),.groups = "drop")
+write_csv(foodborne_total_counts, "results/foodborne_total_counts.csv")
+
+ggplot(foodborne_total_counts, aes(x = as.numeric(year), y = total_foodborne)) +
+  geom_line(linewidth = 1.2, color = "#3043B4") +
+  geom_point() +
+  scale_y_continuous(breaks = seq(0, 140, by = 20)) +
+  labs(
+    title = "Total Foodborne Illness Deaths (1996-2020)",
+    subtitle = "CDC NVSS Mortality Multiple Cause-of-Death data (NBER)",
+    x = "Year",
+    y = "Number of Deaths") +
+  theme_stata() +
+  theme(
+    plot.title = element_text(size = 40, face = "bold", hjust = 0, color = "black"),
+    plot.subtitle = element_text(size = 30, color = "black", margin = margin(b = 12), hjust = 0),
+    legend.position = "bottom",
+    legend.text = element_text(size = 20),
+    axis.title.y = element_text(size = 30),
+    axis.title.x = element_text(size = 30),
+    axis.text.x = element_text(size = 35), 
+    axis.text.y = element_text(size = 35, angle = 0, vjust = 0.5),
+    plot.caption = element_text(size = 12),
+    plot.background = element_rect(fill = "white"))
+ggsave("results/foodborne_deaths.png", width = 20, height = 15)
