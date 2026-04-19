@@ -1,15 +1,15 @@
-## Preliminaries -----------------------------------------------------------
+# Preliminaries ------------------------------------------------------------
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load(tidyverse, ggplot2, ggthemes, dplyr, lubridate, stringr, readxl, data.table, gdata, readr, arrow)
 
-# Set working directory ----------------------------------------------------
+# Set working directory 
 setwd("C:/Users/CarolXu/OneDrive - Cato Institute/Desktop/foodborne illness")
 
-# read in new data ---------------------------------------------------------
+# read in cleaned data
 data = read.csv("data/output/foodborne_data.csv")
 records = paste0("record_", 1:20)
 
-# pathogen counts
+# initial counts by ICD-10 codes
 icd_year_counts = data %>%
   mutate(
     A05  = if_any(c(ucod, all_of(records)), ~ .x == "A05"),
@@ -42,6 +42,7 @@ icd_year_counts = data %>%
 
 write_csv(icd_year_counts, "results/icd_year_counts.csv")
 
+# pathogen counts
 other = c("A05", "A059")
 campylobacter = "A045"
 listeria = c("A32", "A327")
@@ -69,6 +70,7 @@ pathogen_counts = data %>%
 
 write_csv(pathogen_counts, "results/pathogen_year_counts")
 
+# plotting pathogen counts
 count_data = pathogen_counts %>%
   pivot_longer(
     cols = -year,
@@ -125,6 +127,7 @@ gastro_counts = data %>%
     .groups = "drop")
 write_csv(gastro_counts, "results/gastro_counts.csv")
 
+# adding a total pathogens column to gastroenteritis counts
 gastro_total_counts = data %>%
   mutate(gastro_any = if_any(c(ucod, all_of(records)), ~ .x %in% gastro_codes)) %>%
   group_by(year) %>%
@@ -135,6 +138,7 @@ gastro_total_counts = data %>%
       gastro_codes),.groups = "drop")
 write_csv(gastro_year_counts, "results/gastro_total_counts.csv")
 
+# gastroenteritis plot
 ggplot(gastro_total_counts, aes(x = as.numeric(year), y = total_gastro)) +
   geom_line(linewidth = 1.2, color = "#3043B4") +
   geom_point() +
@@ -176,27 +180,10 @@ foodborne_data = data %>%
   select(ucod, year, monthdth, all_of(records)) %>%
   collect() %>%
   filter(
-    ucod %in% foodborne_codes |
-    if_any(all_of(records), ~ .x %in% foodborne_codes))
-    # resulted in 1791 rows
-
-foodborne_data = data %>%
-  select(ucod, year, monthdth, all_of(records)) %>%
-  collect() %>%
-  filter(
     if_any(c(ucod, all_of(records)), ~ .x %in% foodborne_codes))
+        # resulted in 1791 rows
 
-foodborne_counts = data %>%
-  group_by(year) %>%
-  summarise(
-    !!!setNames(
-      map(foodborne_codes, ~
-        expr(sum(if_any(c(ucod, all_of(records)), ~ .x == !!.x), na.rm = TRUE))
-      ),
-      foodborne_codes),
-    .groups = "drop")
-write_csv(foodborne_counts, "results/foodborne_counts.csv")
-
+# foodborne illness counts + total column
 foodborne_total_counts = data %>%
   mutate(foodborne_any = if_any(c(ucod, all_of(records)), ~ .x %in% foodborne_codes)) %>%
   group_by(year) %>%
@@ -207,6 +194,7 @@ foodborne_total_counts = data %>%
       foodborne_codes),.groups = "drop")
 write_csv(foodborne_total_counts, "results/foodborne_total_counts.csv")
 
+# final plot
 ggplot(foodborne_total_counts, aes(x = as.numeric(year), y = total_foodborne)) +
   geom_line(linewidth = 1.2, color = "#3043B4") +
   geom_point() +
